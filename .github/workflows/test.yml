@@ -1,0 +1,70 @@
+name: Test Setup
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check secrets are configured
+        env:
+          MY_EMAIL: ${{ secrets.MY_EMAIL }}
+          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
+        run: |
+          if [ -z "$MY_EMAIL" ]; then
+            echo "❌ MY_EMAIL secret is not set!"
+            echo "Go to Settings > Secrets > Actions and add it."
+            exit 1
+          else
+            echo "✅ MY_EMAIL is configured"
+          fi
+
+          if [ -z "$MY_PASSWORD" ]; then
+            echo "❌ MY_PASSWORD secret is not set!"
+            echo "Go to Settings > Secrets > Actions and add it."
+            exit 1
+          else
+            echo "✅ MY_PASSWORD is configured"
+          fi
+
+          echo "🎉 All secrets are configured!"
+
+      - name: Check required files exist
+        run: |
+          echo "Checking for required files..."
+
+          for file in main.py requirements.txt birthdays.csv; do
+            if [ -f "$file" ]; then
+              echo "✅ $file found"
+            else
+              echo "❌ $file not found!"
+              exit 1
+            fi
+          done
+
+          echo "🎉 All required files found!"
+
+      - name: Test Python syntax
+        run: python -m py_compile main.py && echo "✅ Python syntax OK"
+
+      - name: Success
+        run: |
+          echo "========================================"
+          echo "  🎉 All checks passed!"
+          echo "  Your setup is ready to go."
+          echo "========================================"

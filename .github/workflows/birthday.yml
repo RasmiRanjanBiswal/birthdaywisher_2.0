@@ -1,0 +1,40 @@
+name: Birthday Automation
+
+on:
+  schedule:
+     # ╔═══════════════════════════════════════════════════════════════╗
+     # ║  CHANGE THE LINE BELOW to set when your script runs          ║
+     # ║                                                                ║
+     # ║  Format:  'MINUTE HOUR * * *'                                  ║
+     # ║                                                                ║
+     # ║  Examples:                                                     ║
+     # ║    '0 9 * * *'   = 9:00 AM UTC daily                          ║
+     # ║    '30 14 * * *' = 2:30 PM UTC daily                          ║
+     # ║    '0 0 * * *'   = Midnight UTC daily                         ║
+     # ║                                                                ║
+     # ║  Use https://time.is/UTC to find your local time in UTC       ║
+     # ╚═══════════════════════════════════════════════════════════════╝
+
+    - cron: "30 0 * * *"   # runs daily at 12:30 AM UTC = 6:00 AM IST
+  workflow_dispatch:       # Allow manual trigger
+
+jobs:
+  run-script:
+    runs-on: ubuntu-24.04 #ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pandas python-dotenv
+
+      - name: Run script
+        env:
+          MY_EMAIL: ${{ secrets.MY_EMAIL }}
+          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
+        run: python main.py
