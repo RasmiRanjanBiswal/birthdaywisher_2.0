@@ -5,8 +5,8 @@ import random
 import smtplib
 from email.message import EmailMessage
 
-MY_EMAIL = os.getenv("MY_EMAIL")
-MY_PASSWORD = os.getenv("MY_PASSWORD")
+MY_EMAIL = "rinkubiswal.hbk@gmail.com"
+MY_PASSWORD = "aeif mvmk kglu rexf"  # Gmail App Password
 
 today_tuple = (datetime.now().month, datetime.now().day)
 
@@ -17,7 +17,6 @@ data = pd.read_csv("birthdays.csv")
 birthday_people = data[(data["month"] == today_tuple[0]) & (data["day"] == today_tuple[1])]
 
 if not birthday_people.empty:
-    # Open one SMTP connection for all emails
     with smtplib.SMTP("smtp.gmail.com", 587) as connection:
         connection.starttls()
         connection.login(MY_EMAIL, MY_PASSWORD)
@@ -25,8 +24,11 @@ if not birthday_people.empty:
         for _, person in birthday_people.iterrows():
             # Pick a random letter template
             file_path = f"letter_templates/letter_{random.randint(1, 3)}.txt"
-            with open(file_path) as letter_file:
-                contents = letter_file.read().replace("[NAME]", person["name"])
+            with open(file_path, encoding="utf-8") as letter_file:
+                template_text = letter_file.read()
+
+            # Replace placeholder with recipient’s name
+            contents = template_text.replace("[NAME]", person["name"])
 
             # Build the email
             msg = EmailMessage()
@@ -34,20 +36,24 @@ if not birthday_people.empty:
             msg["To"] = person["email"]
             msg["Subject"] = "Happy Birthday!"
 
-            # Add plain text fallback
+            # Plain text fallback
             msg.set_content(contents)
 
             # Pick a random image from attachments folder
-            image_files = [f for f in os.listdir("attachments") if f.lower().endswith((".jpg", ".jpeg", ".png","avif","webp"))]
+            image_files = [f for f in os.listdir("attachments") if f.lower().endswith((".jpg", ".jpeg", ".png", ".avif", ".webp"))]
             chosen_image = random.choice(image_files)
 
-            # Add HTML version with inline image before signature
+            # HTML version with inline image
             html_content = f"""
             <html>
-              <body>
-                <p>{contents}</p>
+              <body style="font-family: Arial, sans-serif; font-size: 14px;">
+                <pre style="font-family: inherit; white-space: pre-wrap;">
+{contents}
+
+Lots of love,
+Rinku
+                </pre>
                 <img src="cid:birthday_img" alt="Birthday Image" style="width:600px; height:auto;">
-                <p>Lots of love,<br>Rinku</p>
               </body>
             </html>
             """
@@ -66,4 +72,4 @@ if not birthday_people.empty:
             # Send the email
             connection.send_message(msg)
 
-            print(f"🎉 Birthday email with inline image ({chosen_image}) sent to {person['name']} at {person['email']}")
+            print(f"🎉 Birthday email sent to {person['name']} at {person['email']} with image {chosen_image}")
