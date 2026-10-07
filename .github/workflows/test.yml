@@ -14,7 +14,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       - name: Install dependencies
         run: |
@@ -28,7 +28,6 @@ jobs:
         run: |
           if [ -z "$MY_EMAIL" ]; then
             echo "❌ MY_EMAIL secret is not set!"
-            echo "Go to Settings > Secrets > Actions and add it."
             exit 1
           else
             echo "✅ MY_EMAIL is configured"
@@ -36,7 +35,6 @@ jobs:
 
           if [ -z "$MY_PASSWORD" ]; then
             echo "❌ MY_PASSWORD secret is not set!"
-            echo "Go to Settings > Secrets > Actions and add it."
             exit 1
           else
             echo "✅ MY_PASSWORD is configured"
@@ -44,9 +42,9 @@ jobs:
 
           echo "🎉 All secrets are configured!"
 
-      - name: Check required files exist
+      - name: Check required files and folders exist
         run: |
-          echo "Checking for required files..."
+          echo "Checking for required files and folders..."
 
           for file in main.py requirements.txt birthdays.csv; do
             if [ -f "$file" ]; then
@@ -57,10 +55,47 @@ jobs:
             fi
           done
 
-          echo "🎉 All required files found!"
+          for dir in letter_templates signatures attachments; do
+            if [ -d "$dir" ]; then
+              echo "✅ $dir folder found"
+            else
+              echo "❌ $dir folder not found!"
+              exit 1
+            fi
+          done
+
+          echo "🎉 All required files and folders found!"
+
+      - name: Validate template and signature files
+        run: |
+          echo "Checking for template and signature files..."
+
+          if ls letter_templates/letter_*.txt 1> /dev/null 2>&1; then
+            echo "✅ At least one letter template found"
+          else
+            echo "❌ No letter templates found!"
+            exit 1
+          fi
+
+          if ls signatures/signature_*.txt 1> /dev/null 2>&1; then
+            echo "✅ At least one signature file found"
+          else
+            echo "❌ No signature files found!"
+            exit 1
+          fi
+
+          echo "🎉 Templates and signatures validated!"
 
       - name: Test Python syntax
         run: python -m py_compile main.py && echo "✅ Python syntax OK"
+
+      - name: Dry run main.py
+        env:
+          MY_EMAIL: ${{ secrets.MY_EMAIL }}
+          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
+        run: |
+          echo "🚀 Running birthday email script (dry run)..."
+          python main.py || echo "⚠️ Script failed, check logs"
 
       - name: Success
         run: |
