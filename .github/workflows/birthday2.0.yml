@@ -15,7 +15,7 @@ on:
      # ║  Use https://time.is/UTC to find your local time in UTC       ║
      # ╚═══════════════════════════════════════════════════════════════╝
 
-    - cron: "00 30 * * *"   # runs daily at 12:30 AM UTC = 6:00 AM IST
+    - cron: "30 0 * * *"   # runs daily at 12:30 AM UTC = 6:00 AM IST
   workflow_dispatch:       # Allow manual trigger
 
 jobs:

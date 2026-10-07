@@ -4,11 +4,13 @@ import pandas as pd
 import random
 import smtplib
 from email.message import EmailMessage
+from datetime import datetime, timedelta, timezone
 
 MY_EMAIL = os.getenv("MY_EMAIL")
 MY_PASSWORD = os.getenv("MY_PASSWORD")  # Gmail App Password
 
-today_tuple = (datetime.now().month, datetime.now().day)
+IST = timezone(timedelta(hours=5, minutes=30))
+today_tuple = (datetime.now(IST).month, datetime.now(IST).day)
 
 # Load birthdays CSV (with cc_mails and bcc_mails columns)
 data = pd.read_csv("birthdays.csv")
